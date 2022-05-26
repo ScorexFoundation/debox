@@ -1,7 +1,6 @@
 package debox
 
 import scala.reflect.ClassTag
-import scala.{specialized => sp}
 
 /**
  * Buffer is a mutable, indexed sequence of values.

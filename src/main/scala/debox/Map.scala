@@ -2,7 +2,6 @@ package debox
 
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
-import scala.{specialized => sp}
 
 /**
  * Map is a mutable hash map, with open addressing and double hashing.
