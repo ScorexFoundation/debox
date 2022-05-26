@@ -15,3 +15,5 @@ TAGS
 *~
 .#*
 .lib
+.idea/
+.bsp/

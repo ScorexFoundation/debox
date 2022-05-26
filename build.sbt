@@ -1,4 +1,4 @@
-import ReleaseTransformations._
+import sbt.Keys.{fork, publishArtifact}
 
 lazy val scalac: Seq[String] = Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
@@ -96,15 +96,20 @@ lazy val scalac213: Seq[String] = Seq(
   "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
 )
 
+lazy val scala213 = "2.13.8"
+lazy val scala212 = "2.12.15"
+lazy val scala211 = "2.11.12"
+
+
 lazy val deboxSettings = Seq(
-  organization := "org.spire-math",
+  organization := "org.scorexfoundation",
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  homepage := Some(url("http://github.com/non/debox")),
+  homepage := Some(url("http://github.com/ScorexFoundation/debox")),
+  description := "Fast, deboxed, specialized data structures for Scala (fork of non/debox)",
 
-  scalaVersion := "2.13.6",
-  crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.6"),
-
-  resolvers += Resolver.sonatypeRepo("releases"),
+  scalaVersion := scala213,
+  crossScalaVersions := Seq(scala211, scala212, scala213),
+  resolvers += Resolver.sonatypeRepo("public"),
   libraryDependencies ++= Seq(
     "org.typelevel" %% "spire-macros" % "0.17.0-M1",
     "org.scalatest" %% "scalatest" % "3.3.0-SNAP3" % Test,
@@ -113,7 +118,6 @@ lazy val deboxSettings = Seq(
     "org.scalatestplus" %% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
     "org.scalacheck" %% "scalacheck" % "1.15.2" % Test
   ),
-
 
   scalacOptions := {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -139,41 +143,25 @@ lazy val deboxSettings = Seq(
     }
   },
 
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   publishMavenStyle := true,
-  Test / publishArtifact := false,
-  pomIncludeRepository := Function.const(false),
 
-  publishTo := Some(if (isSnapshot.value) Opts.resolver.sonatypeSnapshots else Opts.resolver.sonatypeStaging),
-
+  publishTo := sonatypePublishToBundle.value,
   pomExtra := (
-    <scm>
-      <url>git@github.com:non/debox.git</url>
-      <connection>scm:git:git@github.com:non/debox.git</connection>
-    </scm>
     <developers>
       <developer>
-        <id>d_m</id>
-        <name>Erik Osheim</name>
-        <url>http://github.com/non/</url>
+        <id>aslesarenko</id>
+        <name>Alexander Slesarenko</name>
+        <url>https://github.com/aslesarenko/</url>
       </developer>
     </developers>
   ),
-
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges))
+  scmInfo := Some(
+    ScmInfo(
+      url("https://github.com/ScorexFoundation/debox"),
+      "scm:git@github.com:ScorexFoundation/debox.git"
+    )
+  )
+)
 
 lazy val noPublishSettings = Seq(
   publish := {},
@@ -195,3 +183,32 @@ lazy val benchmark = project.dependsOn(core)
     run / javaOptions += "-Xmx3G",
     run / fork := true))
   .settings(noPublishSettings)
+
+// prefix version with "-SNAPSHOT" for builds without a git tag
+dynverSonatypeSnapshots in ThisBuild := true
+// use "-" instead of default "+"
+dynverSeparator in ThisBuild := "-"
+
+Test / publishArtifact := true
+pomIncludeRepository := { _ => false }
+
+val credentialFile = Path.userHome / ".sbt" / ".sigma-sonatype-credentials"
+credentials ++= (for {
+  file <- if (credentialFile.exists) Some(credentialFile) else None
+} yield Credentials(file)).toSeq
+
+credentials ++= (for {
+  username <- Option(System.getenv().get("SONATYPE_USERNAME"))
+  password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
+} yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
+
+
+// PGP key for signing a release build published to sonatype
+// signing is done by sbt-pgp plugin
+// how to generate a key - https://central.sonatype.org/pages/working-with-pgp-signatures.html
+// how to export a key and use it with Travis - https://docs.scala-lang.org/overviews/contributors/index.html#export-your-pgp-key-pair
+pgpPublicRing := file("ci/pubring.asc")
+pgpSecretRing := file("ci/secring.asc")
+pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toArray)
+usePgpKeyHex("C1FD62B4D44BDF702CDF2B726FF59DA944B150DD")
+
