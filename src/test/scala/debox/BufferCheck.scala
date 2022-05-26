@@ -5,14 +5,11 @@ import org.scalacheck.Arbitrary._
 import org.scalacheck._
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import spire.algebra.Order
-import spire.compat._
-import spire.std.any._
 
 import scala.collection.mutable
 import scala.reflect._
 
-abstract class BufferCheck[A: Arbitrary: ClassTag: Order]
+abstract class BufferCheck[A: Arbitrary: ClassTag]
     extends AnyPropSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   def hybridEq(d: Buffer[A], s: scala.collection.IndexedSeq[A]): Boolean =
@@ -177,15 +174,6 @@ abstract class BufferCheck[A: Arbitrary: ClassTag: Order]
       control.insertAll(i, ys)
       hybridEq(buf1, control) shouldBe true
       hybridEq(buf2, control) shouldBe true
-    }
-  }
-
-  property("sort") {
-    forAll { xs: List[A] =>
-      val a = Buffer.fromIterable(xs)
-      a.sort
-      val b = Buffer.fromIterable(xs.sorted)
-      a shouldBe b
     }
   }
 

@@ -3,10 +3,6 @@ package debox
 import scala.reflect.ClassTag
 import scala.{specialized => sp}
 
-import spire.algebra._
-import spire.math.QuickSort
-import spire.syntax.all._
-
 /**
  * Buffer is a mutable, indexed sequence of values.
  *
@@ -533,103 +529,6 @@ final class Buffer[@sp A](arr: Array[A], n: Int)(implicit val ct: ClassTag[A]) e
   }
 
   /**
-   * Add the buffer contents together, returning their sum.
-   */
-  def sum(implicit ev: AdditiveMonoid[A]): A = {
-    val limit = len
-    var result: A = ev.zero
-    cfor(0)(_ < limit, _ + 1) { i => result += elems(i) }
-    result
-  }
-
-  /**
-   * Multiply the buffer contents together, returning their product.
-   */
-  def product(implicit ev: MultiplicativeMonoid[A]): A = {
-    val limit = len
-    var result: A = ev.one
-    cfor(0)(_ < limit, _ + 1) { i => result *= elems(i) }
-    result
-  }
-
-  /**
-   * Find the p-norm of the buffer's contents.
-   *
-   * The p-norm generalizes notion of a length function.
-   */
-  def norm(p: Int)(implicit ev: Field[A], s: Signed[A], nr: NRoot[A]): A = {
-    val limit = len
-    var result: A = ev.one
-    cfor(0)(_ < limit, _ + 1) { i =>
-      result += elems(i).abs ** p
-    }
-    result nroot p
-  }
-
-  /**
-   * Find the minimum value in this buffer.
-   *
-   * This method uses an instance of Spire's Order[A] type class to
-   * compare the elements, to avoid boxing. If you want to use Scala's
-   * Ordering, you can use compatibility code in Spire, or call
-   * toIterable.min.
-   */
-  def min(implicit o: Order[A]): A = {
-    if (isEmpty) throw new UnsupportedOperationException()
-    var result: A = elems(0)
-    val limit = len
-    cfor(1)(_ < limit, _ + 1) { i =>
-      result = result min elems(i)
-    }
-    result
-  }
-
-  /**
-   * Find the maximum value in this buffer.
-   *
-   * This method uses an instance of Spire's Order[A] type class to
-   * compare the elements, to avoid boxing. If you want to use Scala's
-   * Ordering, you can use compatibility code in Spire, or call
-   * toIterable.min.
-   */
-  def max(implicit o: Order[A]): A = {
-    if (isEmpty) throw new UnsupportedOperationException()
-    var result: A = elems(0)
-    val limit = len
-    cfor(1)(_ < limit, _ + 1) { i =>
-      result = result max elems(i)
-    }
-    result
-  }
-
-  /**
-   * Find the mean (average) value of this buffer's contents.
-   */
-  def mean(implicit ev: Field[A]): A = {
-    if (isEmpty) throw new UnsupportedOperationException()
-    var result: A = ev.zero
-    val limit = len
-    cfor(0)(_ < limit, _ + 1) { i =>
-      result = (result * i / (i + 1)) + (elems(i) / (i + 1))
-    }
-    result
-  }
-
-  /**
-   * Sort the contents of the buffer.
-   *
-   * This method uses an instance of Spire's Order[A] type class to
-   * compare the elements, to avoid boxing. If you want to use Scala's
-   * Ordering, you can use compatibility code in Spire, or call
-   * toIterable.min.
-   */
-  def sort(implicit o: Order[A]): Unit =
-    // Spire's quicksort algorithm changed from version 0.14.1 (debox's original version): https://github.com/typelevel/spire/blob/v0.14.1/core/shared/src/main/scala/spire/math/Sorting.scala
-    // to version 0.17.0-M1 (debox's current version): https://github.com/typelevel/spire/blob/v0.17.0-M1/core/src/main/scala/spire/math/Sorting.scala
-    // The old version used length - 1 for the end variable, while the new version uses length
-    QuickSort.qsort(elems, 0, len)
-
-  /**
    * Create an array out of the elements in the buffer.
    *
    * This is an O(n) operation, where n is the length of the buffer.
@@ -747,82 +646,8 @@ object Buffer extends LowPriorityBufferImplicits {
    */
   def fromIterable[@sp A: ClassTag](items: Iterable[A]): Buffer[A] =
     unsafe(items.toArray)
-
-  /**
-   * Provide an Order[Buffer[A]] instance.
-   *
-   * The empty buffer is considered "less-than" any non-empty buffer,
-   * and non-empty buffers are compared lexicographically. Elemens are
-   * compared using the given Order[A].
-   */
-  implicit def order[@sp A: Order]: Order[Buffer[A]] =
-    new Order[Buffer[A]] {
-      def compare(lhs: Buffer[A], rhs: Buffer[A]): Int = {
-        val (minLength, lastResult) =
-          if (lhs.length < rhs.length) (lhs.length, -1)
-          else if (lhs.length == rhs.length) (lhs.length, 0)
-          else (rhs.length, 1)
-
-        cfor(0)(_ < minLength, _ + 1) { i =>
-          val n = lhs.elems(i) compare rhs.elems(i)
-          if (n != 0) return n
-        }
-        lastResult
-      }
-    }
-
-  /**
-   * Provides a Monoid[Buffer[A]] instance.
-   *
-   * The identity value is an empty buffer, and the ++ operator is
-   * used to concatenate two buffers without modifying their contents.
-   */
-  implicit def monoid[@sp A: ClassTag]: Monoid[Buffer[A]] =
-    new Monoid[Buffer[A]] {
-      def empty: Buffer[A] = Buffer.empty[A]
-      def combine(lhs: Buffer[A], rhs: Buffer[A]): Buffer[A] = lhs ++ rhs
-    }
-
-  /**
-   * Alternative Monoid[Buffer[A]] which combines buffers in a
-   * pairwise fashion.
-   */
-  def pairwiseMonoid[@sp A: ClassTag: Monoid]: Monoid[Buffer[A]] =
-    new Monoid[Buffer[A]] {
-      def empty: Buffer[A] = Buffer.empty[A]
-      def combine(lhs: Buffer[A], rhs: Buffer[A]): Buffer[A] =
-        if (lhs.length >= rhs.length) {
-          val out = lhs.copy()
-          cfor(0)(_ < rhs.elems.length, _ + 1) { i =>
-            out(i) = out(i) |+| rhs.elems(i)
-          }
-          out
-        } else {
-          val out = rhs.copy()
-          cfor(0)(_ < lhs.elems.length, _ + 1) { i =>
-            out(i) = lhs.elems(i) |+| out(i)
-          }
-          out
-        }
-    }
 }
 
 trait LowPriorityBufferImplicits {
 
-  /**
-   * Provide an Eq[Buffer[A]] instance.
-   *
-   * This method uses the given Eq[A] to compare each element
-   * pairwise. Buffers are required to be the same length.
-   */
-  implicit def eqv[@sp A: Eq]: Eq[Buffer[A]] =
-    new Eq[Buffer[A]] {
-      def eqv(lhs: Buffer[A], rhs: Buffer[A]): Boolean = {
-        if (lhs.length != rhs.length) return false
-        cfor(0)(_ < lhs.elems.length, _ + 1) { i =>
-          if (lhs.elems(i) =!= rhs.elems(i)) return false
-        }
-        true
-      }
-    }
 }

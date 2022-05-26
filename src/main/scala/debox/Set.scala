@@ -4,9 +4,6 @@ import scala.annotation.tailrec
 import scala.reflect.ClassTag
 import scala.{specialized => sp}
 
-import spire.algebra._
-import spire.syntax.all._
-
 /**
  * Set is a mutable hash set, with open addressing and double hashing.
  *
@@ -712,19 +709,6 @@ final class Set[@sp (Short, Char, Int, Float, Long, Double, AnyRef) A] protected
   def toBuffer(): Buffer[A] = Buffer.fromArray(toArray())
 
   /**
-   * Copy the set's elements into a sorted buffer.
-   *
-   * Elements will be arranged from lowest-to-highest.
-   *
-   * This is an O(n) operation, where n is the size of the set.
-   */
-  def toSortedBuffer(implicit o: Order[A]): Buffer[A] = {
-    val buf = Buffer.fromArray(toArray())
-    buf.sort
-    buf
-  }
-
-  /**
    * Copy the sets contents into a Map. The elements of the set will
    * be keys, and each keys' value will be determined with the
    * provided function.
@@ -828,7 +812,7 @@ object Set {
    * being built.
    */
   def fromArray[@sp A: ClassTag](as: Array[A]): Set[A] = {
-    val n = spire.math.max(8, as.length + as.length / 2)
+    val n = scala.math.max(8, as.length + as.length / 2)
     val set = ofSize[A](n)
     cfor(0)(_ < as.length, _ + 1)(i => set.add(as(i)))
     set
@@ -843,26 +827,4 @@ object Set {
     set
   }
 
-  /**
-   * Provide a Eq[Set[A]] instance.
-   *
-   * Since Sets are so reliant on equality, and use hash codes
-   * internally, the default equality is used to compare elements.
-   */
-  implicit def eqv[A]: Eq[Set[A]] =
-    new Eq[Set[A]] {
-      def eqv(lhs: Set[A], rhs: Set[A]): Boolean = lhs == rhs
-    }
-
-  /**
-   * Provide a CMonoid[Set[A]] instance.
-   *
-   * Since element order is irrelevant, union is a commutative
-   * operation. The empty set is the identity element.
-   */
-  implicit def cmonoid[@sp A: ClassTag]: CMonoid[Set[A]] =
-    new CMonoid[Set[A]] {
-      def empty = Set.empty[A]
-      def combine(lhs: Set[A], rhs: Set[A]): Set[A] = lhs | rhs
-    }
 }

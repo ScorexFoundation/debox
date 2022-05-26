@@ -1,10 +1,9 @@
 package debox.benchmark
 
+import debox.cfor
+
 import scala.collection.mutable
 import scala.util.Random._
-
-import spire.syntax.cfor._
-
 import org.openjdk.jmh.annotations._
 
 object MapBenchmark {

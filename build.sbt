@@ -106,7 +106,7 @@ lazy val deboxSettings = Seq(
 
   resolvers += Resolver.sonatypeRepo("releases"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "spire" % "0.17.0-M1",
+    "org.typelevel" %% "spire-macros" % "0.17.0-M1",
     "org.scalatest" %% "scalatest" % "3.3.0-SNAP3" % Test,
     "org.scalatest" %% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
     "org.scalatest" %% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,

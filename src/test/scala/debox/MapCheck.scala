@@ -7,11 +7,8 @@ import org.scalatest.propspec._
 
 import scala.collection.mutable
 import scala.reflect._
-import spire.algebra.{CMonoid, Ring}
-import spire.std.any._
-import spire.syntax.monoid._
 
-abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: Cogen: CMonoid]
+abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: Cogen]
     extends AnyPropSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
@@ -37,24 +34,6 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
       val control = mutable.Map(pairs: _*)
       hybridEq(map1, control) shouldBe true
       hybridEq(map2, control) shouldBe true
-    }
-  }
-
-  property("equals (==), hashCode (##)") {
-    forAll { (xs0: Map[A, B], ys: Map[A, B]) =>
-      val xs = xs0.toList
-      val a = DMap.fromIterable(xs)
-      val b = DMap.fromIterable(xs.reverse)
-      a shouldBe b
-      a.## shouldBe b.##
-
-      val c = DMap.fromIterable(ys)
-      if (xs0 == ys) {
-        a shouldBe c
-        a.## shouldBe c.##
-      } else {
-        a should not be c
-      }
     }
   }
 
@@ -175,44 +154,6 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
     }
   }
 
-  property("mapItemsToMap") {
-
-    // import Arbitrary.arbitrary
-    // implicit val arbf2: Arbitrary[(A, B) => (A, B)] =
-    //   Arbitrary(for {
-    //     f <- arbitrary[(A, B) => A]
-    //     g <- arbitrary[(A, B) => B]
-    //   } yield (a, b) => (f(a, b), g(a, b)))
-
-    forAll { (kvs: Map[A, B], f: (A, B) => (A, B)) =>
-      val m = DMap.fromIterable(kvs)
-      m.mapToSet((_, b) => b) shouldBe DSet.fromArray(m.valuesArray)
-
-      val kvs2 = kvs.foldLeft(Map.empty[A, B]) { case (m, (a, b)) =>
-        val (aa, bb1) = f(a, b)
-        val bb2 = m.getOrElse(aa, CMonoid[B].empty)
-        m.updated(aa, bb1 |+| bb2)
-      }
-      
-      m.mapItemsToMap(f) shouldBe DMap.fromIterable(kvs2)
-    }
-  }
-
-  property("mapKeys") {
-    forAll { (kvs: Map[A, B], f: A => A) =>
-      val m = DMap.fromIterable(kvs)
-      m.mapKeys(a => a) shouldBe m
-
-      val kvs2 = kvs.foldLeft(Map.empty[A, B]) { case (m, (a, b)) =>
-        val aa = f(a)
-        val bb = m.getOrElse(aa, CMonoid[B].empty)
-        m.updated(aa, bb |+| b)
-      }
-
-      m.mapKeys(f) shouldBe DMap.fromIterable(kvs2)
-    }
-  }
-
   property("mapValues") {
     forAll { (kvs: Map[A, B], f: B => B) =>
       val m = DMap.fromIterable(kvs)
@@ -235,24 +176,6 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
     }
   }
 }
-
-object Impl {
-  implicit val cmint: CMonoid[Int] = Ring[Int].additive
-
-  // argh, why? (i guess CRig doesn't exist)
-  implicit val cmboolean: CMonoid[Boolean] = new CMonoid[Boolean] {
-    def empty: Boolean = false
-    def combine(lhs: Boolean, rhs: Boolean): Boolean = lhs || rhs
-  }
-
-  // junky but law-abiding
-  implicit val cmstring: CMonoid[String] = new CMonoid[String] {
-    def empty: String = ""
-    def combine(lhs: String, rhs: String): String = if (lhs > rhs) lhs else rhs
-  }
-}
-
-import Impl._
 
 class IntIntMapCheck extends MapCheck[Int, Int]
 class IntBooleanMapCheck extends MapCheck[Int, Boolean]
