@@ -1,7 +1,5 @@
 package debox
 
-import scala.{specialized => sp}
-
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox.Context
 

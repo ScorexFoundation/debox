@@ -5,13 +5,10 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalacheck._
 import org.scalatest.propspec._
 
-import spire.algebra.Order
-import spire.std.any._
-
 import scala.collection.mutable
 import scala.reflect._
 
-abstract class SetCheck[A: Arbitrary: ClassTag: Cogen: Order]
+abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
     extends AnyPropSpec with Matchers with ScalaCheckDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
@@ -220,17 +217,6 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen: Order]
       val b = DSet.fromIterable(xs)
       a.filterSelf(p)
       a shouldBe b.findAll(p)
-    }
-  }
-
-  property("toBuffer") {
-    forAll { (xs: Array[A]) =>
-      val set1 = DSet.fromArray(xs)
-      val buf1 = set1.toBuffer()
-      val buf2 = Buffer.fromArray(xs)
-      buf1.sort
-      buf2.sort
-      //buf1 shouldBe buf2
     }
   }
 

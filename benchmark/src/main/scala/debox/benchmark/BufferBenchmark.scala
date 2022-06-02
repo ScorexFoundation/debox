@@ -3,7 +3,6 @@ package debox.benchmark
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random.nextLong
 
-import spire.syntax.cfor._
 import debox._
 
 import org.openjdk.jmh.annotations._
