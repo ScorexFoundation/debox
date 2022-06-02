@@ -22,6 +22,8 @@ jobs:
         scala: [2.13.8, 2.12.15, 2.11.12]
         java: [adopt@1.8]
     runs-on: ${{ matrix.os }}
+    env:
+      HAS_SECRETS: ${{ secrets.SONATYPE_PASSWORD != '' }}
     steps:
       - name: Checkout current branch (full)
         uses: actions/checkout@v2
