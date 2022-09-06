@@ -107,16 +107,18 @@ lazy val deboxSettings = Seq(
   homepage := Some(url("http://github.com/ScorexFoundation/debox")),
   description := "Fast, deboxed, specialized data structures for Scala (fork of non/debox)",
 
-  scalaVersion := scala213,
-  crossScalaVersions := Seq(scala211, scala212, scala213),
   resolvers += Resolver.sonatypeRepo("public"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "spire-macros" % "0.17.0-M1",
-    "org.scalatest" %% "scalatest" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
-    "org.scalatestplus" %% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.2" % Test
+    "org.typelevel" %%% "spire-macros" % "0.17.0-RC1",
+//    (if (crossProjectPlatform.value.identifier == "js")
+//      "org.typelevel" %% "spire-macros" % "0.17.0-RC1"
+//    else
+//      "org.typelevel" %% "spire-macros" % "0.17.0-RC1"),
+    "org.scalatest" %%% "scalatest" % "3.3.0-SNAP3" % Test,
+    "org.scalatest" %%% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
+    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
+    "org.scalatestplus" %%% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.15.2" % Test
   ),
 
   scalacOptions := {
@@ -130,19 +132,14 @@ lazy val deboxSettings = Seq(
     }
   },
 
-  libraryDependencies := {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-      case Some((2, n)) if n >= 11 =>
-        libraryDependencies.value
-      // in Scala 2.10, quasiquotes are provided by macro-paradise
-      case Some((2, 10)) =>
-        libraryDependencies.value ++ Seq(
-          compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-          "org.scalamacros" %% "quasiquotes" % "2.0.1")
-    }
-  },
-
+//  libraryDependencies := {
+//    CrossVersion.partialVersion(scalaVersion.value) match {
+//      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
+//      case Some((2, n)) if n >= 11 =>
+//        libraryDependencies.value
+//    }
+//  },
+//
   publishMavenStyle := true,
 
   publishTo := sonatypePublishToBundle.value,
@@ -169,20 +166,29 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val core = project
+lazy val core = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(moduleName := "debox")
   .settings(deboxSettings)
+  .jvmSettings(
+    scalaVersion := scala213,
+    crossScalaVersions := Seq(scala211, scala212, scala213),
+  )
+  .jsSettings(
+    scalaVersion := scala213,
+    crossScalaVersions := Seq(scala213),
+    parallelExecution in Test := false
+  )
 
-lazy val benchmark = project.dependsOn(core)
-  .in(file("benchmark"))
-  .settings(moduleName := "debox-benchmark")
-  .settings(deboxSettings)
-  .enablePlugins(JmhPlugin)
-  .settings(Seq(
-    run / javaOptions += "-Xmx3G",
-    run / fork := true))
-  .settings(noPublishSettings)
+//lazy val benchmark = project.dependsOn(core.jvm)
+//  .in(file("benchmark"))
+//  .settings(moduleName := "debox-benchmark")
+//  .settings(deboxSettings)
+//  .enablePlugins(JmhPlugin)
+//  .settings(Seq(
+//    run / javaOptions += "-Xmx3G",
+//    run / fork := true))
+//  .settings(noPublishSettings)
 
 // prefix version with "-SNAPSHOT" for builds without a git tag
 dynverSonatypeSnapshots in ThisBuild := true
