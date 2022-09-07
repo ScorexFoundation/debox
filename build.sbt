@@ -160,16 +160,16 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(deboxSettings)
   .jvmSettings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire-macros" % "0.17.0"
+      "org.typelevel" %%% "spire-macros" % "0.17.0-M1" // Version published for Scala 2.11-2.13
     ),
     scalaVersion := scala213,
-    crossScalaVersions := Seq(/*scala211, */scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212, scala213),
   )
   .jsSettings(
     scalaVersion := scala213,
     crossScalaVersions := Seq(scala213),
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire-macros" % "0.17.0"
+      "org.typelevel" %%% "spire-macros" % "0.17.0"  // Version supporting Scala.js 1.x 2.13, 3.x
     ),
     parallelExecution in Test := false
   )
