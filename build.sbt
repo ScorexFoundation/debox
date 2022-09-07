@@ -174,15 +174,18 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     parallelExecution in Test := false
   )
 
-//lazy val benchmark = project.dependsOn(core.jvm)
-//  .in(file("benchmark"))
-//  .settings(moduleName := "debox-benchmark")
-//  .settings(deboxSettings)
-//  .enablePlugins(JmhPlugin)
-//  .settings(Seq(
-//    run / javaOptions += "-Xmx3G",
-//    run / fork := true))
-//  .settings(noPublishSettings)
+lazy val benchmark = project
+  .in(file("benchmark"))
+  .dependsOn(core.jvm)
+  .settings(
+    moduleName := "debox-benchmark",
+    scalaVersion := scala213,
+  )
+  .enablePlugins(JmhPlugin)
+  .settings(Seq(
+    run / javaOptions += "-Xmx3G",
+    run / fork := true))
+  .settings(noPublishSettings)
 
 // prefix version with "-SNAPSHOT" for builds without a git tag
 dynverSonatypeSnapshots in ThisBuild := true
