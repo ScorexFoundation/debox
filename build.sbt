@@ -109,11 +109,7 @@ lazy val deboxSettings = Seq(
 
   resolvers += Resolver.sonatypeRepo("public"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %%% "spire-macros" % "0.17.0-RC1",
-//    (if (crossProjectPlatform.value.identifier == "js")
-//      "org.typelevel" %% "spire-macros" % "0.17.0-RC1"
-//    else
-//      "org.typelevel" %% "spire-macros" % "0.17.0-RC1"),
+    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
     "org.scalatest" %%% "scalatest" % "3.3.0-SNAP3" % Test,
     "org.scalatest" %%% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
     "org.scalatest" %%% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
@@ -132,14 +128,6 @@ lazy val deboxSettings = Seq(
     }
   },
 
-//  libraryDependencies := {
-//    CrossVersion.partialVersion(scalaVersion.value) match {
-//      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-//      case Some((2, n)) if n >= 11 =>
-//        libraryDependencies.value
-//    }
-//  },
-//
   publishMavenStyle := true,
 
   publishTo := sonatypePublishToBundle.value,
@@ -171,12 +159,18 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "debox")
   .settings(deboxSettings)
   .jvmSettings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire-macros" % "0.17.0"
+    ),
     scalaVersion := scala213,
-    crossScalaVersions := Seq(scala211, scala212, scala213),
+    crossScalaVersions := Seq(/*scala211, */scala212, scala213),
   )
   .jsSettings(
     scalaVersion := scala213,
     crossScalaVersions := Seq(scala213),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire-macros" % "0.17.0"
+    ),
     parallelExecution in Test := false
   )
 
