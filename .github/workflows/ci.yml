@@ -52,7 +52,7 @@ jobs:
 
       - name: Publish a snapshot ${{ github.ref }}
         if: env.HAS_SECRETS == 'true'
-        run: sbt ++${{ matrix.scala }} publish
+        run: sbt ++${{ matrix.scala }} coreJVM/publish
         env:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
@@ -95,7 +95,7 @@ jobs:
 
       - name: Publish a snapshot ${{ github.ref }}
         if: env.HAS_SECRETS == 'true'
-        run: sbt ++${{ matrix.scala }} publish
+        run: sbt ++${{ matrix.scala }} coreJS/publish
         env:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
