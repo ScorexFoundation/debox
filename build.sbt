@@ -100,7 +100,6 @@ lazy val scala213 = "2.13.8"
 lazy val scala212 = "2.12.15"
 lazy val scala211 = "2.11.12"
 
-
 lazy val deboxSettings = Seq(
   organization := "org.scorexfoundation",
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -179,6 +178,7 @@ lazy val benchmark = project
   .dependsOn(core.jvm)
   .settings(
     moduleName := "debox-benchmark",
+    crossScalaVersions := Seq(scala211, scala212, scala213),
     scalaVersion := scala213,
   )
   .enablePlugins(JmhPlugin)
