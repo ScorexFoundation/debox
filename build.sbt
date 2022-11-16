@@ -12,11 +12,8 @@ lazy val scalac: Seq[String] = Seq(
   "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
   // "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
-  "-Ywarn-numeric-widen",              // Warn when numerics are widened.
+  "-Ywarn-numeric-widen"              // Warn when numerics are widened.
   //"-Xlog-free-terms",
-  "-feature",
-  "-deprecation",
-  "-unchecked"
 )
 
 lazy val scalac211: Seq[String] = Seq(
@@ -162,15 +159,15 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "org.typelevel" %%% "spire-macros" % "0.17.0-M1" // Version published for Scala 2.11-2.13
     ),
     scalaVersion := scala213,
-    crossScalaVersions := Seq(scala211, scala212, scala213),
+    crossScalaVersions := Seq(scala211, scala212, scala213)
   )
   .jsSettings(
     scalaVersion := scala213,
-    crossScalaVersions := Seq(scala213),
+    crossScalaVersions := Seq(scala213, scala212),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "spire-macros" % "0.17.0"  // Version supporting Scala.js 1.x 2.13, 3.x
     ),
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 
 lazy val benchmark = project
@@ -188,9 +185,9 @@ lazy val benchmark = project
   .settings(noPublishSettings)
 
 // prefix version with "-SNAPSHOT" for builds without a git tag
-dynverSonatypeSnapshots in ThisBuild := true
+ThisBuild / dynverSonatypeSnapshots := true
 // use "-" instead of default "+"
-dynverSeparator in ThisBuild := "-"
+ThisBuild / dynverSeparator := "-"
 
 Test / publishArtifact := true
 pomIncludeRepository := { _ => false }
