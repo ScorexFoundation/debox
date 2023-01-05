@@ -1,6 +1,13 @@
-## Debox
+## Scorex-Debox
 
-### Overview
+This fork of the original Debox has the following changes:
+- supports for Scala 2.13 
+- supports for Scala.js 1.x
+- spire dependency is removed (only spire-macros remains for cfor macro)
+- cfor macro is redeclared in Debox using cforMacro
+- some methods which required spire are [removed](https://github.com/ScorexFoundation/debox/pull/2/files) (e.g. `Buffer#sum`)
+
+### Debox Overview
 
 Debox provides specialized mutable collections that don't box.
 
@@ -9,7 +16,8 @@ collections framework (although conversions are possible). You may find
 that Debox's structures provide more reliable performance than Scala's
 mutable collections.
 
-Debox is available for Scala 2.11, 2.12, and 2.13.
+Debox is available for Scala 2.11, 2.12, 2.13 and Scala.js 1.x. (Latest supported versions
+can be found [here](https://index.scala-lang.org/scorexfoundation/debox))
 
 (For Scala 2.10, use Debox 0.7.3 or older.)
 
@@ -21,7 +29,7 @@ following snippet:
 ```
 resolvers += Resolver.sonatypeRepo("releases"),
 
-libraryDependencies += "org.spire-math" %% "debox" % "0.9.0"
+libraryDependencies += "org.scorexfoundation" %% "debox" % "0.9.0"
 ```
 
 ### Debox Types
@@ -59,9 +67,8 @@ child += 3
 child(0) = 999
 child.toString // Buffer(999, 1, 2, 3)
 
-val buf ++= child
-buf.pop
-buf.sum  // uses spire
+buf ++= child
+val x = buf.pop
 ```
 
 #### Set
