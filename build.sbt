@@ -12,11 +12,8 @@ lazy val scalac: Seq[String] = Seq(
   "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
   // "-Ypartial-unification",             // Enable partial unification in type constructor inference
   "-Ywarn-dead-code",                  // Warn when dead code is identified.
-  "-Ywarn-numeric-widen",              // Warn when numerics are widened.
+  "-Ywarn-numeric-widen"              // Warn when numerics are widened.
   //"-Xlog-free-terms",
-  "-feature",
-  "-deprecation",
-  "-unchecked"
 )
 
 lazy val scalac211: Seq[String] = Seq(
@@ -100,23 +97,20 @@ lazy val scala213 = "2.13.8"
 lazy val scala212 = "2.12.15"
 lazy val scala211 = "2.11.12"
 
-
 lazy val deboxSettings = Seq(
   organization := "org.scorexfoundation",
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   homepage := Some(url("http://github.com/ScorexFoundation/debox")),
   description := "Fast, deboxed, specialized data structures for Scala (fork of non/debox)",
 
-  scalaVersion := scala213,
-  crossScalaVersions := Seq(scala211, scala212, scala213),
   resolvers += Resolver.sonatypeRepo("public"),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "spire-macros" % "0.17.0-M1",
-    "org.scalatest" %% "scalatest" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
-    "org.scalatestplus" %% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.15.2" % Test
+    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
+    "org.scalatest" %%% "scalatest" % "3.3.0-SNAP3" % Test,
+    "org.scalatest" %%% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
+    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
+    "org.scalatestplus" %%% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
+    "org.scalacheck" %%% "scalacheck" % "1.15.2" % Test
   ),
 
   scalacOptions := {
@@ -127,19 +121,6 @@ lazy val deboxSettings = Seq(
         scalac ++ scalac212
       case Some((2, 11)) =>
         scalac ++ scalac211
-    }
-  },
-
-  libraryDependencies := {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-      case Some((2, n)) if n >= 11 =>
-        libraryDependencies.value
-      // in Scala 2.10, quasiquotes are provided by macro-paradise
-      case Some((2, 10)) =>
-        libraryDependencies.value ++ Seq(
-          compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-          "org.scalamacros" %% "quasiquotes" % "2.0.1")
     }
   },
 
@@ -169,15 +150,34 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val core = project
+lazy val core = crossProject(JSPlatform, JVMPlatform)
   .in(file("."))
   .settings(moduleName := "debox")
   .settings(deboxSettings)
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire-macros" % "0.17.0-M1" // The last version published for Scala 2.11-2.13
+    ),
+    scalaVersion := scala213,
+    crossScalaVersions := Seq(scala211, scala212, scala213)
+  )
+  .jsSettings(
+    scalaVersion := scala213,
+    crossScalaVersions := Seq(scala213, scala212),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire-macros" % "0.17.0"  // Version supporting Scala.js 1.x 2.13, 3.x
+    ),
+    Test / parallelExecution := false
+  )
 
-lazy val benchmark = project.dependsOn(core)
+lazy val benchmark = project
   .in(file("benchmark"))
-  .settings(moduleName := "debox-benchmark")
-  .settings(deboxSettings)
+  .dependsOn(core.jvm)
+  .settings(
+    moduleName := "debox-benchmark",
+    crossScalaVersions := Seq(scala211, scala212, scala213),
+    scalaVersion := scala213,
+  )
   .enablePlugins(JmhPlugin)
   .settings(Seq(
     run / javaOptions += "-Xmx3G",
@@ -185,9 +185,9 @@ lazy val benchmark = project.dependsOn(core)
   .settings(noPublishSettings)
 
 // prefix version with "-SNAPSHOT" for builds without a git tag
-dynverSonatypeSnapshots in ThisBuild := true
+ThisBuild / dynverSonatypeSnapshots := true
 // use "-" instead of default "+"
-dynverSeparator in ThisBuild := "-"
+ThisBuild / dynverSeparator := "-"
 
 Test / publishArtifact := true
 pomIncludeRepository := { _ => false }
