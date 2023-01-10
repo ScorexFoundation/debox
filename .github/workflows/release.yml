@@ -1,5 +1,4 @@
 name: Publish a release
-
 on:
   release:
     types: [published]
