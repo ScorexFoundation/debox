@@ -125,7 +125,7 @@ lazy val deboxSettings = Seq(
   },
 
   publishMavenStyle := true,
-
+  sonatypeProfileName := "org.scorexfoundation",
   publishTo := sonatypePublishToBundle.value,
   pomExtra := (
     <developers>
