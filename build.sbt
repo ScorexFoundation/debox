@@ -173,6 +173,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
 lazy val benchmark = project
   .in(file("benchmark"))
   .dependsOn(core.jvm)
+  .settings(deboxSettings)
   .settings(
     moduleName := "debox-benchmark",
     crossScalaVersions := Seq(scala211, scala212, scala213),
