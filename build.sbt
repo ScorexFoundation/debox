@@ -183,6 +183,8 @@ lazy val benchmark = project
     run / javaOptions += "-Xmx3G",
     run / fork := true))
   .settings(noPublishSettings)
+  .settings(publish / aggregate := false)
+  .settings(publishLocal / aggregate := false)
 
 def scalacReleaseOption = {
   if (System.getProperty("java.version").startsWith("1."))
