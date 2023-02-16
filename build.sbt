@@ -170,22 +170,22 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     Test / parallelExecution := false
   )
 
-lazy val benchmark = project
-  .in(file("benchmark"))
-  .dependsOn(core.jvm)
-  .settings(deboxSettings)
-  .settings(
-    moduleName := "debox-benchmark",
-    crossScalaVersions := Seq(scala211, scala212, scala213),
-    scalaVersion := scala213,
-  )
-  .enablePlugins(JmhPlugin)
-  .settings(Seq(
-    run / javaOptions += "-Xmx3G",
-    run / fork := true))
-  .settings(noPublishSettings)
-  .settings(publish / aggregate := false)
-  .settings(publishLocal / aggregate := false)
+//lazy val benchmark = project
+//  .in(file("benchmark"))
+//  .dependsOn(core.jvm)
+//  .settings(deboxSettings)
+//  .settings(
+//    moduleName := "debox-benchmark",
+//    crossScalaVersions := Seq(scala211, scala212, scala213),
+//    scalaVersion := scala213,
+//  )
+//  .enablePlugins(JmhPlugin)
+//  .settings(Seq(
+//    run / javaOptions += "-Xmx3G",
+//    run / fork := true))
+//  .settings(noPublishSettings)
+//  .settings(publish / aggregate := false)
+//  .settings(publishLocal / aggregate := false)
 
 def scalacReleaseOption = {
   if (System.getProperty("java.version").startsWith("1."))
