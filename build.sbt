@@ -122,8 +122,8 @@ lazy val deboxSettings = Seq(
       case Some((2, 11)) =>
         scalac ++ scalac211
     }
-  },
-
+  } ++ scalacReleaseOption,
+  javacOptions ++= javacReleaseOption,
   publishMavenStyle := true,
   sonatypeProfileName := "org.scorexfoundation",
   publishTo := sonatypePublishToBundle.value,
@@ -183,6 +183,22 @@ lazy val benchmark = project
     run / javaOptions += "-Xmx3G",
     run / fork := true))
   .settings(noPublishSettings)
+
+def scalacReleaseOption = {
+  if (System.getProperty("java.version").startsWith("1."))
+  // java <9 "-release" is not supported
+    Seq()
+  else
+    Seq("-release", "8") // this is passed to javac as `javac -release 8`
+}
+
+def javacReleaseOption = {
+  if (System.getProperty("java.version").startsWith("1."))
+  // java <9 "--release" is not supported
+    Seq()
+  else
+    Seq("--release", "8")
+}
 
 // prefix version with "-SNAPSHOT" for builds without a git tag
 ThisBuild / dynverSonatypeSnapshots := true
