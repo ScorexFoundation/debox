@@ -28,6 +28,7 @@ lazy val scalac211: Seq[String] = Seq(
 )
 
 lazy val scalac212: Seq[String] = Seq(
+  "-release", "8",
   "-opt:simplify-jumps",
   "-opt:compact-locals",
   "-opt:copy-propagation",
@@ -65,6 +66,7 @@ lazy val scalac212: Seq[String] = Seq(
 )
 
 lazy val scalac213: Seq[String] = Seq(
+  "-release", "8",
   "-opt:simplify-jumps",
   "-opt:compact-locals",
   "-opt:copy-propagation",
@@ -114,7 +116,6 @@ def deboxSettings = Seq(
     "org.scalatestplus" %%% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
     "org.scalacheck" %%% "scalacheck" % "1.15.2" % Test
   ),
-
   scalacOptions := {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n == 13 =>
@@ -124,7 +125,7 @@ def deboxSettings = Seq(
       case Some((2, 11)) =>
         scalac ++ scalac211
     }
-  } ++ scalacReleaseOption,
+  },
   javacOptions ++= javacReleaseOption,
   publishMavenStyle := true,
   publishTo := sonatypePublishToBundle.value,
@@ -187,14 +188,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
 //  .settings(noPublishSettings)
 //  .settings(publish / aggregate := false)
 //  .settings(publishLocal / aggregate := false)
-
-def scalacReleaseOption = {
-  if (System.getProperty("java.version").startsWith("1."))
-  // java <9 "-release" is not supported
-    Seq()
-  else
-    Seq("-release", "8") // this is passed to javac as `javac -release 8`
-}
 
 def javacReleaseOption = {
   if (System.getProperty("java.version").startsWith("1."))
