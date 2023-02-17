@@ -97,7 +97,10 @@ lazy val scala213 = "2.13.8"
 lazy val scala212 = "2.12.15"
 lazy val scala211 = "2.11.12"
 
-lazy val deboxSettings = Seq(
+organization := "org.scorexfoundation"
+sonatypeProfileName := "org.scorexfoundation"
+
+def deboxSettings = Seq(
   organization := "org.scorexfoundation",
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   homepage := Some(url("http://github.com/ScorexFoundation/debox")),
