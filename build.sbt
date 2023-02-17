@@ -98,7 +98,6 @@ lazy val scala212 = "2.12.15"
 lazy val scala211 = "2.11.12"
 
 organization := "org.scorexfoundation"
-sonatypeProfileName := "org.scorexfoundation"
 
 def deboxSettings = Seq(
   organization := "org.scorexfoundation",
@@ -128,7 +127,6 @@ def deboxSettings = Seq(
   } ++ scalacReleaseOption,
   javacOptions ++= javacReleaseOption,
   publishMavenStyle := true,
-  sonatypeProfileName := "org.scorexfoundation",
   publishTo := sonatypePublishToBundle.value,
   pomExtra := (
     <developers>
