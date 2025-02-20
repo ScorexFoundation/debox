@@ -3,6 +3,8 @@ package debox
 import scala.reflect.ClassTag
 
 /**
+ * NOTE: Use ArrayBuffer or ArrayDeque instead of Buffer since Scala 2.13+
+ *
  * Buffer is a mutable, indexed sequence of values.
  *
  * Buffer wraps an underlying array, which provides constant-time

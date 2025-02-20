@@ -40,7 +40,7 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("fromIterable, apply") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val buf1 = Buffer.fromIterable(xs)
       val buf2 = Buffer(xs: _*)
       val seq = xs.toIndexedSeq
@@ -59,7 +59,7 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("equals (==), hashCode (##)") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val seq = xs.toIndexedSeq
       val a = Buffer.fromIterable(seq)
       val b = Buffer.fromIterable(seq ++ seq).slice(0, seq.length)
@@ -81,7 +81,7 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("clear") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val a = Buffer.fromIterable(xs)
       a.clear()
       a.isEmpty shouldBe true
@@ -100,7 +100,7 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("adding elements (+=)") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val buf = Buffer.empty[A]
       val control = mutable.ArrayBuffer.empty[A]
       xs.foreach { x =>
@@ -112,7 +112,7 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("removing elements (-=)") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val buf = Buffer.fromIterable(xs)
       val control = mutable.ArrayBuffer(xs.toSeq: _*)
       xs.foreach { _ =>
@@ -178,25 +178,25 @@ abstract class BufferCheck[A: Arbitrary: ClassTag]
   }
 
   property("iterator") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       Buffer.fromIterable(xs).iterator().toList shouldBe xs
     }
   }
 
   property("toIterable") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       Buffer.fromIterable(xs).toIterable().toList shouldBe xs
     }
   }
 
   property("toList") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       Buffer.fromIterable(xs).toList() shouldBe xs
     }
   }
 
   property("toVector") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       Buffer.fromIterable(xs).toVector() shouldBe xs.toVector
     }
   }
