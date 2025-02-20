@@ -28,7 +28,7 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
   }
 
   property("fromIterable, apply") {
-    forAll { pairs: List[(A, B)] =>
+    forAll { (pairs: List[(A, B)]) =>
       val map1 = DMap.fromIterable(pairs)
       val map2 = DMap(pairs: _*)
       val control = mutable.Map(pairs: _*)
@@ -38,7 +38,7 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
   }
 
   property("copy") {
-    forAll { kvs: List[(A, B)] =>
+    forAll { (kvs: List[(A, B)]) =>
       val a = DMap.fromIterable(kvs)
       val b = a.copy()
       a shouldBe b
@@ -52,7 +52,7 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
   }
 
   property("clear") {
-    forAll { kvs: List[(A, B)] =>
+    forAll { (kvs: List[(A, B)]) =>
       val a = DMap.fromIterable(kvs)
       a.clear()
       a shouldBe DMap.empty[A, B]
@@ -60,7 +60,7 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
   }
 
   property("adding elements (update)") {
-    forAll { kvs: Map[A, B] =>
+    forAll { (kvs: Map[A, B]) =>
       val map = DMap.empty[A, B]
       val control = mutable.Map.empty[A, B]
       kvs.foreach { case (k, v) =>
@@ -73,7 +73,7 @@ abstract class MapCheck[A: Arbitrary: ClassTag: Cogen, B: Arbitrary: ClassTag: C
   }
 
   property("removing elements (remove)") {
-    forAll { kvs: Map[A, B] =>
+    forAll { (kvs: Map[A, B]) =>
       val map = DMap.fromIterable(kvs)
       val control = mutable.Map(kvs.toSeq: _*)
       kvs.foreach { case (k, _) =>

@@ -17,3 +17,10 @@ TAGS
 .lib
 .idea/
 .bsp/
+
+# Metals
+.metals/
+**/metals.sbt
+
+# Bloop
+**/.bloop

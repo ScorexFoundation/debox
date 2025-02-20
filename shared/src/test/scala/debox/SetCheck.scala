@@ -18,7 +18,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
     d.size == s.size && d.forall(s.contains)
 
   property("fromArray") {
-    forAll { xs: Array[A] =>
+    forAll { (xs: Array[A]) =>
       val set = DSet.fromArray(xs)
       val control = mutable.Set(xs.toSeq: _*)
       hybridEq(set, control) shouldBe true
@@ -26,7 +26,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("fromIterable, apply") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val set1 = DSet.fromIterable(xs)
       val set2 = DSet(xs: _*)
       val control = mutable.Set(xs: _*)
@@ -36,7 +36,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("equals (==), hashCode (##)") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val a = DSet.fromIterable(xs)
       val b = DSet.fromIterable(xs.reverse)
       a shouldBe b
@@ -45,7 +45,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("copy") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val a = DSet.fromIterable(xs)
       val b = a.copy()
       a shouldBe b
@@ -59,7 +59,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("clear") {
-    forAll { xs: List[A] =>
+    forAll { (xs: List[A]) =>
       val a = DSet.fromIterable(xs)
       a.clear()
       a shouldBe DSet.empty[A]
@@ -67,7 +67,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("adding elements (+=)") {
-    forAll { xs: Set[A] =>
+    forAll { (xs: Set[A]) =>
       val set = DSet.empty[A]
       val control = mutable.Set.empty[A]
       xs.foreach { x =>
@@ -80,7 +80,7 @@ abstract class SetCheck[A: Arbitrary: ClassTag: Cogen]
   }
 
   property("removing elements (-=)") {
-    forAll { xs: Set[A] =>
+    forAll { (xs: Set[A]) =>
       val set = DSet.fromIterable(xs)
       val control = mutable.Set(xs.toSeq: _*)
       xs.foreach { x =>

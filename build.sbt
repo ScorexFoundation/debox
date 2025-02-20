@@ -11,8 +11,8 @@ lazy val scalac: Seq[String] = Seq(
   "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
   "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
   // "-Ypartial-unification",             // Enable partial unification in type constructor inference
-  "-Ywarn-dead-code",                  // Warn when dead code is identified.
-  "-Ywarn-numeric-widen"              // Warn when numerics are widened.
+  // "-Ywarn-dead-code",                  // Warn when dead code is identified.
+  // "-Ywarn-numeric-widen"              // Warn when numerics are widened.
   //"-Xlog-free-terms",
 )
 
@@ -25,6 +25,8 @@ lazy val scalac211: Seq[String] = Seq(
   "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
   "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
   "-Xfuture",                          // Turn on future language features.
+  "-Ywarn-dead-code",                  // Warn when dead code is identified.
+  "-Ywarn-numeric-widen"               // Warn when numerics are widened.
 )
 
 lazy val scalac212: Seq[String] = Seq(
@@ -63,6 +65,8 @@ lazy val scalac212: Seq[String] = Seq(
   "-Xlint:unsound-match",              // Pattern match may not be typesafe.
   "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
   "-Xfuture",                          // Turn on future language features.
+  "-Ywarn-dead-code",                  // Warn when dead code is identified.
+  "-Ywarn-numeric-widen"               // Warn when numerics are widened.
 )
 
 lazy val scalac213: Seq[String] = Seq(
@@ -93,11 +97,19 @@ lazy val scalac213: Seq[String] = Seq(
   "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
   "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
   "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
+  "-Ywarn-dead-code",                  // Warn when dead code is identified.
+  "-Ywarn-numeric-widen"               // Warn when numerics are widened.
 )
 
-lazy val scala213 = "2.13.8"
-lazy val scala212 = "2.12.15"
+lazy val scalac3: Seq[String] = Seq(
+  "-source:3.0-migration" // makes the compiler forgiving on most of the dropped features, printing warnings in place of errors
+)
+
+lazy val scala213 = "2.13.16"
+lazy val scala212 = "2.12.20"
 lazy val scala211 = "2.11.12"
+lazy val scala3 = "3.3.5"
+lazy val scalatestVersion = "3.2.19"
 
 organization := "org.scorexfoundation"
 
@@ -108,22 +120,45 @@ def deboxSettings = Seq(
   description := "Fast, deboxed, specialized data structures for Scala (fork of non/debox)",
 
   resolvers += Resolver.sonatypeRepo("public"),
-  libraryDependencies ++= Seq(
-    scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided",
-    "org.scalatest" %%% "scalatest" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %%% "scalatest-propspec" % "3.3.0-SNAP3" % Test,
-    "org.scalatest" %%% "scalatest-shouldmatchers" % "3.3.0-SNAP3" % Test,
-    "org.scalatestplus" %%% "scalacheck-1-15" % "3.3.0.0-SNAP3" % Test,
-    "org.scalacheck" %%% "scalacheck" % "1.15.2" % Test
-  ),
-  scalacOptions := {
+  libraryDependencies ++= {
+    val base = Seq(
+      "org.scalatest" %%% "scalatest" % scalatestVersion % Test,
+      "org.scalatest" %%% "scalatest-propspec" % scalatestVersion % Test,
+      "org.scalatest" %%% "scalatest-shouldmatchers" % scalatestVersion % Test
+    )
+    val reflect = Seq(scalaOrganization.value % "scala-reflect" % scalaVersion.value % "provided")
+    val core211 = Seq(
+      "org.typelevel" %%% "spire-macros" % "0.17.0-M1",
+      "org.scalatestplus" %%% "scalacheck-1-15" % "3.2.4.0-M1" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.15.2" % Test
+    )
+    val spireMacros = Seq("org.typelevel" %%% "spire-macros" % "0.17.0")
+    val spire = Seq("org.typelevel" %%% "spire" % "0.18.0")
+    val scalacheck = Seq(
+      "org.scalatestplus" %%% "scalacheck-1-18" % "3.2.19.0" % Test,
+      "org.scalacheck" %%% "scalacheck" % "1.18.1" % Test
+    )
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n == 13 =>
-        scalac ++ scalac213
-      case Some((2, n)) if n == 12 =>
-        scalac ++ scalac212
+      case Some((2, 11)) =>
+        base ++ core211
+      case Some((2, 12)) =>
+        base ++ scalacheck ++ spireMacros ++ reflect
+      case Some((2, 13)) =>
+        base ++ scalacheck ++ spireMacros ++ reflect
+      case Some((3, _)) =>
+        base ++ scalacheck ++ spire
+    }
+  },
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 11)) =>
         scalac ++ scalac211
+      case Some((2, 12)) =>
+        scalac ++ scalac212
+      case Some((2, 13)) =>
+        scalac ++ scalac213
+      case Some((3, _)) =>
+        scalac ++ scalac3
     }
   },
   javacOptions ++= javacReleaseOption,
@@ -157,18 +192,12 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "debox")
   .settings(deboxSettings)
   .jvmSettings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire-macros" % "0.17.0-M1" // The last version published for Scala 2.11-2.13
-    ),
     scalaVersion := scala213,
-    crossScalaVersions := Seq(scala211, scala212, scala213)
+    crossScalaVersions := Seq(scala211, scala212, scala213, scala3)
   )
   .jsSettings(
     scalaVersion := scala213,
-    crossScalaVersions := Seq(scala213, scala212),
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire-macros" % "0.17.0"  // Version supporting Scala.js 1.x 2.13, 3.x
-    ),
+    crossScalaVersions := Seq(scala212, scala213, scala3),
     Test / parallelExecution := false
   )
 
@@ -177,7 +206,7 @@ lazy val benchmark = project
     .dependsOn(core.jvm)
     .settings(
       moduleName := "debox-benchmark",
-      crossScalaVersions := Seq(scala211, scala212, scala213),
+      crossScalaVersions := Seq(scala211, scala212, scala213, scala3),
       scalaVersion := scala213,
     )
     .enablePlugins(JmhPlugin)
